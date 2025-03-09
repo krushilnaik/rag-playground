@@ -175,3 +175,4 @@ cython_debug/
 
 # vector database
 vector_db
+documents
