@@ -1,0 +1,7 @@
+langgraph
+langchain-openai
+langchain-community
+chromadb
+beautifulsoup4
+lxml
+langchain-chroma

@@ -2,20 +2,32 @@ import os
 
 from langchain.prompts import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
 from langchain_community.document_loaders import BSHTMLLoader
-from langchain_community.vectorstores import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from pydantic import SecretStr
 
 llm_config = {"base_url": "http://localhost:1234/v1", "api_key": SecretStr("not-needed")}
 
+KNOWLEDGE_BASE = "./documents"
+VECTOR_DB_PATH = "./vector_db"
+
 
 # Initialize Vector Store
-def init_vectordb(local_dir: str) -> Chroma:
+def init_vectordb(local_dir: str, persist_directory: str) -> Chroma:
     """
     Build a vector store from local HTML files
     """
+
+    # Load existing vector database
+    if os.path.exists(persist_directory):
+        print("Loading existing vector database...")
+        return Chroma(
+            persist_directory=persist_directory,
+            embedding_function=OpenAIEmbeddings(**llm_config, check_embedding_ctx_length=False),
+        )
+
     documents = []
 
     # Load all HTML files from the directory
@@ -35,6 +47,7 @@ def init_vectordb(local_dir: str) -> Chroma:
     # Create vector store
     vectorstore = Chroma.from_documents(
         documents=chunks,
+        persist_directory=VECTOR_DB_PATH,
         embedding=OpenAIEmbeddings(
             **llm_config,
             check_embedding_ctx_length=False,
@@ -44,7 +57,7 @@ def init_vectordb(local_dir: str) -> Chroma:
     return vectorstore
 
 
-vector_db = init_vectordb("./documents")
+vector_db = init_vectordb(KNOWLEDGE_BASE, VECTOR_DB_PATH)
 
 retriever = vector_db.as_retriever()
 
@@ -54,7 +67,7 @@ prompt = PromptTemplate(
     template="""
         You are an assistant for question-answering tasks. You must answer the question using only the context provided. 
         Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. 
-        Do not mention your sources in your answer. Use three sentences maximum and keep the answer concise. 
+        Do not mention your sources in your answer. Use two sentences maximum and keep the answer concise. 
         Question: {question} 
         Context: {context} 
         Answer: 
