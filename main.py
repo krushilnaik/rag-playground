@@ -75,11 +75,7 @@ prompt = PromptTemplate(
     input_variables=["question", "context"],
 )
 
-llm = ChatOpenAI(
-    **llm_config,
-    model="llama-3.2-1b-instruct",
-    temperature=0,
-)
+llm = ChatOpenAI(**llm_config, temperature=0)
 
 # Chain
 rag_chain = prompt | llm | StrOutputParser()
