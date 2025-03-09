@@ -12,6 +12,8 @@ llm_config = {"base_url": "http://localhost:1234/v1", "api_key": SecretStr("not-
 
 KNOWLEDGE_BASE = "./documents"
 VECTOR_DB_PATH = "./vector_db"
+EMBEDDING_MODEL = "text-embedding-granite-embedding-125m-english"
+CHAT_MODEL = "llama-3.2-3b-instruct"
 
 
 # Initialize Vector Store
@@ -27,7 +29,7 @@ def init_vectordb(local_dir: str, persist_directory: str) -> Chroma:
             persist_directory=persist_directory,
             embedding_function=OpenAIEmbeddings(
                 **llm_config,
-                model="text-embedding-granite-embedding-125m-english",
+                model=EMBEDDING_MODEL,
                 check_embedding_ctx_length=False,
             ),
         )
@@ -54,7 +56,7 @@ def init_vectordb(local_dir: str, persist_directory: str) -> Chroma:
         persist_directory=VECTOR_DB_PATH,
         embedding=OpenAIEmbeddings(
             **llm_config,
-            model="text-embedding-granite-embedding-125m-english",
+            model=EMBEDDING_MODEL,
             check_embedding_ctx_length=False,
         ),
     )
@@ -80,7 +82,7 @@ prompt = PromptTemplate(
     input_variables=["question", "context"],
 )
 
-llm = ChatOpenAI(**llm_config, model="llama-3.2-3b-instruct", temperature=0)
+llm = ChatOpenAI(**llm_config, model=CHAT_MODEL, temperature=0)
 
 # Chain
 rag_chain = prompt | llm | StrOutputParser()
