@@ -25,7 +25,11 @@ def init_vectordb(local_dir: str, persist_directory: str) -> Chroma:
         print("Loading existing vector database...")
         return Chroma(
             persist_directory=persist_directory,
-            embedding_function=OpenAIEmbeddings(**llm_config, check_embedding_ctx_length=False),
+            embedding_function=OpenAIEmbeddings(
+                **llm_config,
+                model="text-embedding-granite-embedding-125m-english",
+                check_embedding_ctx_length=False,
+            ),
         )
 
     documents = []
@@ -50,6 +54,7 @@ def init_vectordb(local_dir: str, persist_directory: str) -> Chroma:
         persist_directory=VECTOR_DB_PATH,
         embedding=OpenAIEmbeddings(
             **llm_config,
+            model="text-embedding-granite-embedding-125m-english",
             check_embedding_ctx_length=False,
         ),
     )
@@ -75,7 +80,7 @@ prompt = PromptTemplate(
     input_variables=["question", "context"],
 )
 
-llm = ChatOpenAI(**llm_config, temperature=0)
+llm = ChatOpenAI(**llm_config, model="llama-3.2-3b-instruct", temperature=0)
 
 # Chain
 rag_chain = prompt | llm | StrOutputParser()
